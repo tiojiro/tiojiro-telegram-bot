@@ -77,11 +77,11 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		String id = update.message().from().id().toString();
 		
 		if (firstName != null && !VAZIO.equals(firstName))
-			from = "firsName: " + firstName;
+			from = firstName;
 		else if(userName != null && !VAZIO.equals(userName))
-			from = "userName: " + userName;
+			from = userName;
 		else if(id != null && !VAZIO.equals(id))
-			from = "id: " + id;
+			from = id;
 		
 		System.out.println("Update received from: ["+ from + "]");
 		
@@ -110,12 +110,20 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		return ret;
 	}
 	
-	private boolean sendHelp (Update update) {
+	private boolean sendHelp (Update update) throws InterruptedException {
+		boolean ret = true;
 		SendResponse sendResponse;
 		StringBuilder msg = new StringBuilder();
-		sendResponse = bot.execute(new SendMessage(update.message().chat().id(), msg.toString()));
 		
-		return sendResponse.isOk();
+		if(sendTyping(update)) {
+			msg.append(msgProperties.getHelp());
+			sendResponse = bot.execute(new SendMessage(update.message().chat().id(), msg.toString()));
+			ret = sendResponse.isOk();
+		} else {
+			ret = false;
+		}
+		
+		return ret;
 	}
 	
 	private boolean sendTyping(Update update) throws InterruptedException {
