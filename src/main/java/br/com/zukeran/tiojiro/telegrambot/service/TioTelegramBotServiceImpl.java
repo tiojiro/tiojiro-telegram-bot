@@ -49,7 +49,10 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 				ret = sendHelloMessage(update);
 				break;
 			case CMD_HELP:
-				ret = sendHelp(update);
+				ret = sendMessage(update, msgProperties.getHelp());
+				break;
+			default:
+				ret = sendMessage(update, msgProperties.getInvalid());
 				break;
 		}
 		
@@ -110,22 +113,6 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		return ret;
 	}
 	
-	private boolean sendHelp (Update update) throws InterruptedException {
-		boolean ret = true;
-		SendResponse sendResponse;
-		StringBuilder msg = new StringBuilder();
-		
-		if(sendTyping(update)) {
-			msg.append(msgProperties.getHelp());
-			sendResponse = bot.execute(new SendMessage(update.message().chat().id(), msg.toString()));
-			ret = sendResponse.isOk();
-		} else {
-			ret = false;
-		}
-		
-		return ret;
-	}
-	
 	private boolean sendTyping(Update update) throws InterruptedException {
 		BaseResponse baseResponse;
 		baseResponse = bot.execute(new SendChatAction(update.message().chat().id(), ChatAction.typing.name()));
@@ -133,5 +120,19 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		TimeUnit.SECONDS.sleep(1);
 		
 		return baseResponse.isOk();
+	}
+	
+	private boolean sendMessage(Update update, String msg) throws InterruptedException {
+		boolean ret = true;
+		SendResponse sendResponse;
+		
+		if(sendTyping(update)) {
+			sendResponse = bot.execute(new SendMessage(update.message().chat().id(), msg));
+			ret = sendResponse.isOk();
+		} else {
+			ret = false;
+		}
+		
+		return ret;
 	}
 }
