@@ -51,7 +51,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			case CMD_HELP:
 				ret = sendMessage(update, msgProperties.getHelp());
 				break;
-			default:
+			case VAZIO:
 				ret = sendMessage(update, msgProperties.getInvalid());
 				break;
 		}
