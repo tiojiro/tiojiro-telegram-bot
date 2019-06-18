@@ -17,6 +17,8 @@ import com.pengrad.telegrambot.response.BaseResponse;
 import com.pengrad.telegrambot.response.GetMeResponse;
 import com.pengrad.telegrambot.response.SendResponse;
 
+import br.com.zukeran.tiojiro.telegrambot.config.TioTelegramBotMsgProperties;
+
 @Service
 public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	
@@ -25,9 +27,13 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	private static final String CMD = "/";
 	private static final String CMD_START = "/start";
 	private static final String CMD_IMG = "/img";
+	private static final String CMD_HELP = "/help";
 	
 	@Autowired
 	TelegramBot bot;
+	
+	@Autowired
+	TioTelegramBotMsgProperties msgProperties;
 
 	@Override
 	public boolean webhook(String strUpdate) throws Exception {
@@ -41,6 +47,9 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 				break;
 			case CMD_IMG:
 				ret = sendHelloMessage(update);
+				break;
+			case CMD_HELP:
+				ret = sendHelp(update);
 				break;
 		}
 		
@@ -83,19 +92,30 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		boolean ret = true;
 		SendResponse sendResponse;
 		String from = getFrom(update);
+		StringBuilder msg = new StringBuilder();
 		
 		if(sendTyping(update)) {
 			if(from != null)
-				sendResponse = bot.execute(new SendMessage(update.message().chat().id(),"Olá, " + from + "!"));
+				msg.append("Hello, " + from + "! ");
 			else
-				sendResponse = bot.execute(new SendMessage(update.message().chat().id(),"Olá!"));
+				msg.append("Hello! ");
 			
+			msg.append(msgProperties.getStart());
+			sendResponse = bot.execute(new SendMessage(update.message().chat().id(), msg.toString()));
 			ret = sendResponse.isOk();
 		} else {
 			ret = false;
 		}
 		
 		return ret;
+	}
+	
+	private boolean sendHelp (Update update) {
+		SendResponse sendResponse;
+		StringBuilder msg = new StringBuilder();
+		sendResponse = bot.execute(new SendMessage(update.message().chat().id(), msg.toString()));
+		
+		return sendResponse.isOk();
 	}
 	
 	private boolean sendTyping(Update update) throws InterruptedException {
