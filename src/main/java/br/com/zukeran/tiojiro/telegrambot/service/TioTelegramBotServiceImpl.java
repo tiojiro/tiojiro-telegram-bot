@@ -46,7 +46,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 				ret = sendHelloMessage(update);
 				break;
 			case CMD_IMG:
-				ret = sendHelloMessage(update);
+				ret = sendMessage(update, msgProperties.getImg());
 				break;
 			case CMD_HELP:
 				ret = sendMessage(update, msgProperties.getHelp());

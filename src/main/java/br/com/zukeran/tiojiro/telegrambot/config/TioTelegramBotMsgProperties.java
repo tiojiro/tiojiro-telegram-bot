@@ -9,7 +9,14 @@ public class TioTelegramBotMsgProperties {
 	private String start;
 	private String help;
 	private String invalid;
+	private String img;
 	
+	public String getImg() {
+		return img;
+	}
+	public void setImg(String img) {
+		this.img = img;
+	}
 	public String getInvalid() {
 		return invalid;
 	}
