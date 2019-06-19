@@ -7,6 +7,15 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties("br.com.zukeran.tiojiro.telegrambot")
 public class TioTelegramBotProperties {
 	private String token;
+	private String ibmAiDetectFace;
+	
+	public String getIbmAiDetectFace() {
+		return ibmAiDetectFace;
+	}
+
+	public void setIbmAiDetectFace(String ibmAiDetectFace) {
+		this.ibmAiDetectFace = ibmAiDetectFace;
+	}
 
 	public String getToken() {
 		return token;

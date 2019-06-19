@@ -9,6 +9,7 @@ import com.ibm.watson.developer_cloud.service.security.IamOptions;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectFacesOptions;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectedFaces;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ImageWithFaces;
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.File;
@@ -27,23 +28,31 @@ import com.pengrad.telegrambot.response.GetMeResponse;
 import com.pengrad.telegrambot.response.SendResponse;
 
 import br.com.zukeran.tiojiro.telegrambot.config.TioTelegramBotMsgProperties;
+import br.com.zukeran.tiojiro.telegrambot.config.TioTelegramBotProperties;
 
+@SuppressWarnings("deprecation")
 @Service
 public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	
+	private static final int ZERO = 0;
 	private static final String VAZIO = "";
 	private static final String SPACE = " ";
 	private static final String CMD = "/";
+	private static final String SLASH = "/";
 	private static final String CMD_START = "/start";
 	private static final String CMD_IMG = "/img";
 	private static final String CMD_HELP = "/help";
 	private static final String PHOTO = "PHOTO";
+	private static final String TELEGRAM_BOT_URL = "https://api.telegram.org/file/bot";
 	
 	@Autowired
 	TelegramBot bot;
 	
 	@Autowired
 	TioTelegramBotMsgProperties msgProperties;
+	
+	@Autowired
+	TioTelegramBotProperties botProperties;
 
 	@Override
 	public boolean webhook(String strUpdate) throws Exception {
@@ -87,8 +96,8 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	private String getCommand(Update update) {
 		String msg = update.message().text();
 		if(msg != null && !VAZIO.equals(msg) && msg.startsWith(CMD))
-			return msg.split(SPACE)[0];
-		else if(update.message().photo() != null && update.message().photo().length>0)
+			return msg.split(SPACE)[ZERO];
+		else if(update.message().photo() != null && update.message().photo().length>ZERO)
 			return PHOTO;
 		else
 			return VAZIO;
@@ -164,21 +173,27 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	
 	private void analyzePhotos(Message message) throws Exception {
 		PhotoSize photo = message.photo()[message.photo().length-1];
-		System.out.println("File Id: [" + photo.fileId() + "]");
 		File file = getFile(photo.fileId());
-		System.out.println("File path: [" + file.filePath() + "]");
 				
 		IamOptions options = new IamOptions.Builder()
-				  .apiKey("7Ch0u0VxYBtAC3MQ4l--QIcYnoD34dLKvmDW7sVy_LXF")
+				  .apiKey(botProperties.getIbmAiDetectFace())
 				  .build();
 		
 		VisualRecognition visualRecognition = new VisualRecognition("2018-03-19", options);
 
 		DetectFacesOptions detectFacesOptions = new DetectFacesOptions.Builder()
-				  .url("https://api.telegram.org/file/bot841170286:AAF0cueUwFNVkMa5dhm0-7I1wATrj8WTkNU/" + file.filePath())
-				  .build();
+				.url(TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath())
+				.build();
 		
-		  DetectedFaces result = visualRecognition.detectFaces(detectFacesOptions).execute();
+		DetectedFaces result = visualRecognition.detectFaces(detectFacesOptions).execute();
 		System.out.println(result);
+		
+		if(result.getImages().size()>ZERO) {
+			for(ImageWithFaces face : result.getImages()) {
+					sendMessage(message, face.toString());
+			}
+		} else {
+			sendMessage(message, "I can't find any face.");
+		}
 	}
 }
