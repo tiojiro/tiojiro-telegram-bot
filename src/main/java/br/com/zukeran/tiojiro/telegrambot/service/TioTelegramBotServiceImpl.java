@@ -5,6 +5,10 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ibm.watson.developer_cloud.service.security.IamOptions;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectFacesOptions;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectedFaces;
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.File;
@@ -154,16 +158,27 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	private File getFile(String fileId) throws Exception {
 		GetFile request = new GetFile(fileId);
 		GetFileResponse getFileResponse = bot.execute(request);
-
-		File file = getFileResponse.file(); // com.pengrad.telegrambot.model.File
+		File file = getFileResponse.file();
 		return file;
 	}
 	
 	private void analyzePhotos(Message message) throws Exception {
-		for(PhotoSize photo : message.photo()) {
-			System.out.println("File Id: [" + photo.fileId() + "]");
-			File file = getFile(photo.fileId());
-			System.out.println("File path: [" + file.filePath() + "]");
-		}
+		PhotoSize photo = message.photo()[message.photo().length-1];
+		System.out.println("File Id: [" + photo.fileId() + "]");
+		File file = getFile(photo.fileId());
+		System.out.println("File path: [" + file.filePath() + "]");
+				
+		IamOptions options = new IamOptions.Builder()
+				  .apiKey("7Ch0u0VxYBtAC3MQ4l--QIcYnoD34dLKvmDW7sVy_LXF")
+				  .build();
+		
+		VisualRecognition visualRecognition = new VisualRecognition("2018-03-19", options);
+
+		DetectFacesOptions detectFacesOptions = new DetectFacesOptions.Builder()
+				  .url("https://api.telegram.org/file/bot841170286:AAF0cueUwFNVkMa5dhm0-7I1wATrj8WTkNU/" + file.filePath())
+				  .build();
+		
+		  DetectedFaces result = visualRecognition.detectFaces(detectFacesOptions).execute();
+		System.out.println(result);
 	}
 }
