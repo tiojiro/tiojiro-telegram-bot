@@ -76,8 +76,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 				ret = sendMessage(message, msgProperties.getHelp());
 				break;
 			case PHOTO:
-				analyzePhotos(message);
-				ret = true;
+				ret = analyzePhotos(message);
 				break;
 			case VAZIO:
 				ret = sendMessage(message, msgProperties.getInvalid());
@@ -171,7 +170,8 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		return file;
 	}
 	
-	private void analyzePhotos(Message message) throws Exception {
+	private boolean analyzePhotos(Message message) throws Exception {
+		boolean ret = false;
 		PhotoSize photo = message.photo()[message.photo().length-1];
 		File file = getFile(photo.fileId());
 				
@@ -188,12 +188,14 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		DetectedFaces result = visualRecognition.detectFaces(detectFacesOptions).execute();
 		System.out.println(result);
 		
-		if(result.getImages().size()>ZERO) {
+		if(result != null && result.getImages().size()>ZERO) {
 			for(ImageWithFaces face : result.getImages()) {
-					sendMessage(message, face.toString());
+					ret = sendMessage(message, face.toString());
 			}
 		} else {
-			sendMessage(message, "I can't find any face.");
+			ret = sendMessage(message, "I can't find any face.");
 		}
+		
+		return ret;
 	}
 }
