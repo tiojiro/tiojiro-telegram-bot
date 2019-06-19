@@ -45,6 +45,9 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		Message message = update.message();
 		String command = getCommand(update);
 		
+		getFrom(message);
+		System.out.println(message.toString());
+		
 		switch(command) {
 			case CMD_START:
 				ret = sendHelloMessage(message);
