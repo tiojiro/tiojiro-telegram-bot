@@ -64,6 +64,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 				break;
 			case PHOTO:
 				analyzePhotos(message);
+				ret = true;
 				break;
 			case VAZIO:
 				ret = sendMessage(message, msgProperties.getInvalid());
