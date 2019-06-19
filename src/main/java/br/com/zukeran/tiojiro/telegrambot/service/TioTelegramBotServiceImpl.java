@@ -9,6 +9,7 @@ import com.ibm.watson.developer_cloud.service.security.IamOptions;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectFacesOptions;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectedFaces;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.Face;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ImageWithFaces;
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
@@ -188,8 +189,8 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		DetectedFaces result = visualRecognition.detectFaces(detectFacesOptions).execute();
 		System.out.println(result);
 		
-		if(result != null && result.getImages().size()>ZERO) {
-			for(ImageWithFaces face : result.getImages()) {
+		if(result != null && result.getImages().get(ZERO).getFaces().size()>ZERO) {
+			for(Face face : result.getImages().get(ZERO).getFaces()) {
 					ret = sendMessage(message, face.toString());
 			}
 		} else {
