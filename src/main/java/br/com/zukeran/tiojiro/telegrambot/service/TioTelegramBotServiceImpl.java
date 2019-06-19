@@ -84,7 +84,6 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 				ret = sendMessage(message, msgProperties.getInvalid());
 				break;
 		}
-		
 		return ret;
 	}
 
@@ -116,7 +115,6 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			from = userName;
 		else if(id != null && !VAZIO.equals(id))
 			from = id;
-
 		return from;
 	}
 	
@@ -138,7 +136,6 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		} else {
 			ret = false;
 		}
-		
 		return ret;
 	}
 	
@@ -161,7 +158,6 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		} else {
 			ret = false;
 		}
-		
 		return ret;
 	}
 	
