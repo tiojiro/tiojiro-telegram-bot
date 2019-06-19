@@ -10,7 +10,14 @@ public class TioTelegramBotMsgProperties {
 	private String help;
 	private String invalid;
 	private String img;
+	private String noFace;
 	
+	public String getNoFace() {
+		return noFace;
+	}
+	public void setNoFace(String noFace) {
+		this.noFace = noFace;
+	}
 	public String getImg() {
 		return img;
 	}

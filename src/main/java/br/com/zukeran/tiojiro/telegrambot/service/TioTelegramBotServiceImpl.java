@@ -191,7 +191,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 					ret = sendMessage(message, face.toString());
 			}
 		} else {
-			ret = sendMessage(message, "I can't find any face.");
+			ret = sendMessage(message, msgProperties.getNoFace());
 		}
 		
 		return ret;
