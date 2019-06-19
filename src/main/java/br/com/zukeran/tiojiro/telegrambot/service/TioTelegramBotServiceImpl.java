@@ -74,11 +74,12 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	
 	private String getCommand(Update update) {
 		String msg = update.message().text();
-		if(msg.startsWith(CMD))
+		if(!VAZIO.equals(msg) && msg.startsWith(CMD))
 			return msg.split(SPACE)[0];
 		else if(update.message().photo().length>0)
 			return PHOTO;
-		return VAZIO;
+		else
+			return VAZIO;
 	}
 	
 	private String getFrom(Message message) {
