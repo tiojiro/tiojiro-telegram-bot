@@ -45,8 +45,8 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		Message message = update.message();
 		String command = getCommand(update);
 		
-		getFrom(message);
-		System.out.println(message.toString());
+		System.out.println("Update received from: ["+ getFrom(message) + "]");
+		System.out.println(update.toString());
 		
 		switch(command) {
 			case CMD_START:
@@ -97,9 +97,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			from = userName;
 		else if(id != null && !VAZIO.equals(id))
 			from = id;
-		
-		System.out.println("Update received from: ["+ from + "]");
-		
+
 		return from;
 	}
 	
@@ -148,23 +146,8 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		return ret;
 	}
 	
-	private boolean sendReplyMessage(Message message, String msg) throws InterruptedException {
-		boolean ret = true;
-		SendResponse sendResponse;
-		
-		if(sendTyping(message)) {
-			sendResponse = bot.execute(new SendMessage(message.chat().id(), msg));
-			ret = sendResponse.isOk();
-		} else {
-			ret = false;
-		}
-		
-		return ret;
-	}
-	
 	private void analyzePhotos(Message message) throws InterruptedException {
 		for(PhotoSize photo : message.photo()) {
-			sendReplyMessage(message.replyToMessage(), "sendReplyMessage " + photo.fileId());
 			sendMessage(message, "sendMessage " + photo.fileId());
 		}
 	}
