@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.model.PhotoSize;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.User;
 import com.pengrad.telegrambot.model.request.ChatAction;
@@ -28,6 +30,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	private static final String CMD_START = "/start";
 	private static final String CMD_IMG = "/img";
 	private static final String CMD_HELP = "/help";
+	private static final String PHOTO = "PHOTO";
 	
 	@Autowired
 	TelegramBot bot;
@@ -39,20 +42,24 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	public boolean webhook(String strUpdate) throws Exception {
 		boolean ret = false;
 		Update update = BotUtils.parseUpdate(strUpdate);
+		Message message = update.message();
 		String command = getCommand(update);
 		
 		switch(command) {
 			case CMD_START:
-				ret = sendHelloMessage(update);
+				ret = sendHelloMessage(message);
 				break;
 			case CMD_IMG:
-				ret = sendMessage(update, msgProperties.getImg());
+				ret = sendMessage(message, msgProperties.getImg());
 				break;
 			case CMD_HELP:
-				ret = sendMessage(update, msgProperties.getHelp());
+				ret = sendMessage(message, msgProperties.getHelp());
+				break;
+			case PHOTO:
+				analyzePhotos(message);
 				break;
 			case VAZIO:
-				ret = sendMessage(update, msgProperties.getInvalid());
+				ret = sendMessage(message, msgProperties.getInvalid());
 				break;
 		}
 		
@@ -69,15 +76,16 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		String msg = update.message().text();
 		if(msg.startsWith(CMD))
 			return msg.split(SPACE)[0];
-		else
-			return VAZIO;
+		else if(update.message().photo().length>0)
+			return PHOTO;
+		return VAZIO;
 	}
 	
-	private String getFrom(Update update) {
+	private String getFrom(Message message) {
 		String from = null;
-		String userName = update.message().from().username();
-		String firstName =  update.message().from().firstName();
-		String id = update.message().from().id().toString();
+		String userName = message.from().username();
+		String firstName =  message.from().firstName();
+		String id = message.from().id().toString();
 		
 		if (firstName != null && !VAZIO.equals(firstName))
 			from = firstName;
@@ -91,20 +99,20 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		return from;
 	}
 	
-	private boolean sendHelloMessage (Update update) throws InterruptedException {
+	private boolean sendHelloMessage (Message message) throws InterruptedException {
 		boolean ret = true;
 		SendResponse sendResponse;
-		String from = getFrom(update);
+		String from = getFrom(message);
 		StringBuilder msg = new StringBuilder();
 		
-		if(sendTyping(update)) {
+		if(sendTyping(message)) {
 			if(from != null)
 				msg.append("Hello, " + from + "! ");
 			else
 				msg.append("Hello! ");
 			
 			msg.append(msgProperties.getStart());
-			sendResponse = bot.execute(new SendMessage(update.message().chat().id(), msg.toString()));
+			sendResponse = bot.execute(new SendMessage(message.chat().id(), msg.toString()));
 			ret = sendResponse.isOk();
 		} else {
 			ret = false;
@@ -113,26 +121,47 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		return ret;
 	}
 	
-	private boolean sendTyping(Update update) throws InterruptedException {
+	private boolean sendTyping(Message message) throws InterruptedException {
 		BaseResponse baseResponse;
-		baseResponse = bot.execute(new SendChatAction(update.message().chat().id(), ChatAction.typing.name()));
+		baseResponse = bot.execute(new SendChatAction(message.chat().id(), ChatAction.typing.name()));
 
 		TimeUnit.SECONDS.sleep(1);
 		
 		return baseResponse.isOk();
 	}
 	
-	private boolean sendMessage(Update update, String msg) throws InterruptedException {
+	private boolean sendMessage(Message message, String msg) throws InterruptedException {
 		boolean ret = true;
 		SendResponse sendResponse;
 		
-		if(sendTyping(update)) {
-			sendResponse = bot.execute(new SendMessage(update.message().chat().id(), msg));
+		if(sendTyping(message)) {
+			sendResponse = bot.execute(new SendMessage(message.chat().id(), msg));
 			ret = sendResponse.isOk();
 		} else {
 			ret = false;
 		}
 		
 		return ret;
+	}
+	
+	private boolean sendReplyMessage(Message message, String msg) throws InterruptedException {
+		boolean ret = true;
+		SendResponse sendResponse;
+		
+		if(sendTyping(message)) {
+			sendResponse = bot.execute(new SendMessage(message.chat().id(), msg));
+			ret = sendResponse.isOk();
+		} else {
+			ret = false;
+		}
+		
+		return ret;
+	}
+	
+	private void analyzePhotos(Message message) throws InterruptedException {
+		for(PhotoSize photo : message.photo()) {
+			sendReplyMessage(message.replyToMessage(), "sendReplyMessage " + photo.fileId());
+			sendMessage(message, "sendMessage " + photo.fileId());
+		}
 	}
 }
