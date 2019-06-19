@@ -10,7 +10,6 @@ import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectFacesOptions;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectedFaces;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.Face;
-import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ImageWithFaces;
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.File;
@@ -80,6 +79,8 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 				ret = analyzePhotos(message);
 				break;
 			case VAZIO:
+				break;
+			default:
 				ret = sendMessage(message, msgProperties.getInvalid());
 				break;
 		}
