@@ -7,15 +7,18 @@ import org.springframework.stereotype.Service;
 
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.File;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.PhotoSize;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.User;
 import com.pengrad.telegrambot.model.request.ChatAction;
+import com.pengrad.telegrambot.request.GetFile;
 import com.pengrad.telegrambot.request.GetMe;
 import com.pengrad.telegrambot.request.SendChatAction;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
+import com.pengrad.telegrambot.response.GetFileResponse;
 import com.pengrad.telegrambot.response.GetMeResponse;
 import com.pengrad.telegrambot.response.SendResponse;
 
@@ -47,6 +50,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		
 		System.out.println("Update received from: ["+ getFrom(message) + "]");
 		System.out.println(update.toString());
+		System.out.println("Command: [" + command + "]");
 		
 		switch(command) {
 			case CMD_START:
@@ -146,9 +150,19 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		return ret;
 	}
 	
-	private void analyzePhotos(Message message) throws InterruptedException {
+	private File getFile(String fileId) throws Exception {
+		GetFile request = new GetFile(fileId);
+		GetFileResponse getFileResponse = bot.execute(request);
+
+		File file = getFileResponse.file(); // com.pengrad.telegrambot.model.File
+		return file;
+	}
+	
+	private void analyzePhotos(Message message) throws Exception {
 		for(PhotoSize photo : message.photo()) {
-			sendMessage(message, "sendMessage " + photo.fileId());
+			System.out.println("File Id: [" + photo.fileId() + "]");
+			File file = getFile(photo.fileId());
+			System.out.println("File path: [" + file.filePath() + "]");
 		}
 	}
 }
