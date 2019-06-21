@@ -1,5 +1,6 @@
 package br.com.zukeran.tiojiro.telegrambot.service;
 
+import java.text.DecimalFormat;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -188,12 +189,29 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		
 		if(result != null && result.getImages().get(ZERO).getFaces().size()>ZERO) {
 			for(Face face : result.getImages().get(ZERO).getFaces()) {
-					ret = sendMessage(message, face.toString());
+					ret = sendMessage(message, faceMessage(face));
 			}
 		} else {
 			ret = sendMessage(message, msgProperties.getNoFace());
 		}
 		
 		return ret;
+	}
+	
+	private String faceMessage(Face face) {
+		StringBuilder faceMessage = new StringBuilder();
+		DecimalFormat df = new DecimalFormat("###.######");
+		
+		faceMessage.append("<b>Age</b>: Between " + face.getAge().getMin() + " and " + face.getAge().getMax());
+		faceMessage.append("<br><b>Score</b>: " + df.format(100*face.getAge().getScore()) + "%<br>");
+		faceMessage.append("<br><b>Gender</b>: " + face.getGender().getGenderLabel());
+		faceMessage.append("<b>Score</b>: " + df.format(100*face.getGender().getScore()) + "%<br>");
+		faceMessage.append("<br><b>Face Location</b>:");
+		faceMessage.append("<br><b>height</b>: " + face.getFaceLocation().getHeight());
+		faceMessage.append("<br><b>width</b>: " + face.getFaceLocation().getWidth());
+		faceMessage.append("<br><b>left</b>: " + face.getFaceLocation().getLeft());
+		faceMessage.append("<br><b>top</b>: " + face.getFaceLocation().getTop());
+		
+		return faceMessage.toString();
 	}
 }
