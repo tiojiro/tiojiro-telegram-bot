@@ -200,17 +200,17 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	
 	private String faceMessage(Face face) {
 		StringBuilder faceMessage = new StringBuilder();
-		DecimalFormat df = new DecimalFormat("###.######");
+		DecimalFormat df = new DecimalFormat("###.##");
 		
-		faceMessage.append("<b>Age</b>: Between " + face.getAge().getMin() + " and " + face.getAge().getMax());
-		faceMessage.append("<br><b>Score</b>: " + df.format(100*face.getAge().getScore()) + "%<br>");
-		faceMessage.append("<br><b>Gender</b>: " + face.getGender().getGenderLabel());
-		faceMessage.append("<b>Score</b>: " + df.format(100*face.getGender().getScore()) + "%<br>");
-		faceMessage.append("<br><b>Face Location</b>:");
-		faceMessage.append("<br><b>height</b>: " + face.getFaceLocation().getHeight());
-		faceMessage.append("<br><b>width</b>: " + face.getFaceLocation().getWidth());
-		faceMessage.append("<br><b>left</b>: " + face.getFaceLocation().getLeft());
-		faceMessage.append("<br><b>top</b>: " + face.getFaceLocation().getTop());
+		faceMessage.append("**Age**: Between " + face.getAge().getMin() + " and " + face.getAge().getMax());
+		faceMessage.append("\n**Score**: " + df.format(100*face.getAge().getScore()) + "%\n");
+		faceMessage.append("\n**Gender**: " + face.getGender().getGenderLabel());
+		faceMessage.append("\n**Score**: " + df.format(100*face.getGender().getScore()) + "%\n");
+		faceMessage.append("\n**Face Location**:");
+		faceMessage.append("\n**height**: " + face.getFaceLocation().getHeight());
+		faceMessage.append("\n**width**: " + face.getFaceLocation().getWidth());
+		faceMessage.append("\n**left**: " + face.getFaceLocation().getLeft());
+		faceMessage.append("\n**top**: " + face.getFaceLocation().getTop());
 		
 		return faceMessage.toString();
 	}
