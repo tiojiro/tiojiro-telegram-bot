@@ -206,14 +206,14 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		DecimalFormat df = new DecimalFormat("###.##");
 		
 		faceMessage.append("*Age*: Between " + face.getAge().getMin() + " and " + face.getAge().getMax());
-		faceMessage.append("\nScore: " + df.format(100*face.getAge().getScore()) + "%\n");
-		faceMessage.append("\nGender: " + face.getGender().getGenderLabel());
-		faceMessage.append("\nScore: " + df.format(100*face.getGender().getScore()) + "%\n");
-		faceMessage.append("\nFace Location:");
-		faceMessage.append("\nheight: " + face.getFaceLocation().getHeight());
-		faceMessage.append("\nwidth: " + face.getFaceLocation().getWidth());
-		faceMessage.append("\nleft: " + face.getFaceLocation().getLeft());
-		faceMessage.append("\ntop: " + face.getFaceLocation().getTop());
+		faceMessage.append("\n*Score*: " + df.format(100*face.getAge().getScore()) + "%\n");
+		faceMessage.append("\n*Gender*: " + face.getGender().getGenderLabel());
+		faceMessage.append("\n*Score*: " + df.format(100*face.getGender().getScore()) + "%\n");
+		faceMessage.append("\n*Face Location*");
+		faceMessage.append("\n*height*: " + face.getFaceLocation().getHeight());
+		faceMessage.append("\n*width*: " + face.getFaceLocation().getWidth());
+		faceMessage.append("\n*left*: " + face.getFaceLocation().getLeft());
+		faceMessage.append("\n*top*: " + face.getFaceLocation().getTop());
 		
 		return faceMessage.toString();
 	}
