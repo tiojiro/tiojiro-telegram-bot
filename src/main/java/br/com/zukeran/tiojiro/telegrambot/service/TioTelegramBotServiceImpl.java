@@ -1,6 +1,5 @@
 package br.com.zukeran.tiojiro.telegrambot.service;
 
-import java.text.DecimalFormat;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ import com.pengrad.telegrambot.response.GetFileResponse;
 import com.pengrad.telegrambot.response.GetMeResponse;
 import com.pengrad.telegrambot.response.SendResponse;
 
-import br.com.zukeran.tiojiro.telegrambot.config.TioTelegramBotMsgProperties;
+import br.com.zukeran.tiojiro.telegrambot.config.TioTelegramBotMessages;
 import br.com.zukeran.tiojiro.telegrambot.config.TioTelegramBotProperties;
 
 @SuppressWarnings("deprecation")
@@ -37,21 +36,22 @@ import br.com.zukeran.tiojiro.telegrambot.config.TioTelegramBotProperties;
 public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	
 	private static final int ZERO = 0;
+	private static final int ONE = 1;
 	private static final String VAZIO = "";
 	private static final String SPACE = " ";
 	private static final String CMD = "/";
 	private static final String SLASH = "/";
 	private static final String CMD_START = "/start";
-	private static final String CMD_IMG = "/img";
 	private static final String CMD_HELP = "/help";
 	private static final String PHOTO = "PHOTO";
+	private static final String DATE_VERSION = "2018-03-19";
 	private static final String TELEGRAM_BOT_URL = "https://api.telegram.org/file/bot";
 	
 	@Autowired
 	TelegramBot bot;
 	
 	@Autowired
-	TioTelegramBotMsgProperties msgProperties;
+	TioTelegramBotMessages listMessages;
 	
 	@Autowired
 	TioTelegramBotProperties botProperties;
@@ -62,20 +62,18 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		Update update = BotUtils.parseUpdate(strUpdate);
 		Message message = update.message();
 		String command = getCommand(update);
+		String from = getFrom(message);
 		
-		System.out.println("Update received from: ["+ getFrom(message) + "]");
+		System.out.println("Update received from: ["+ from + "]");
 		System.out.println(update.toString());
 		System.out.println("Command: [" + command + "]");
 		
 		switch(command) {
 			case CMD_START:
-				ret = sendHelloMessage(message);
-				break;
-			case CMD_IMG:
-				ret = sendMessage(message, msgProperties.getImg());
+				ret = sendMessage(message, listMessages.start(from));
 				break;
 			case CMD_HELP:
-				ret = sendMessage(message, msgProperties.getHelp());
+				ret = sendMessage(message, listMessages.help());
 				break;
 			case PHOTO:
 				ret = analyzePhotos(message);
@@ -83,7 +81,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			case VAZIO:
 				break;
 			default:
-				ret = sendMessage(message, msgProperties.getInvalid());
+				ret = sendMessage(message, listMessages.invalidCmd());
 				break;
 		}
 		return ret;
@@ -120,32 +118,11 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		return from;
 	}
 	
-	private boolean sendHelloMessage (Message message) throws InterruptedException {
-		boolean ret = true;
-		SendResponse sendResponse;
-		String from = getFrom(message);
-		StringBuilder msg = new StringBuilder();
-		
-		if(sendTyping(message)) {
-			if(from != null)
-				msg.append("Hello, " + from + "! ");
-			else
-				msg.append("Hello! ");
-			
-			msg.append(msgProperties.getStart());
-			sendResponse = bot.execute(new SendMessage(message.chat().id(), msg.toString()));
-			ret = sendResponse.isOk();
-		} else {
-			ret = false;
-		}
-		return ret;
-	}
-	
 	private boolean sendTyping(Message message) throws InterruptedException {
 		BaseResponse baseResponse;
 		baseResponse = bot.execute(new SendChatAction(message.chat().id(), ChatAction.typing.name()));
 
-		TimeUnit.SECONDS.sleep(1);
+		TimeUnit.SECONDS.sleep(ONE);
 		
 		return baseResponse.isOk();
 	}
@@ -174,14 +151,14 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	
 	private boolean analyzePhotos(Message message) throws Exception {
 		boolean ret = false;
-		PhotoSize photo = message.photo()[message.photo().length-1];
+		PhotoSize photo = message.photo()[message.photo().length-ONE];
 		File file = getFile(photo.fileId());
 				
 		IamOptions options = new IamOptions.Builder()
 				  .apiKey(botProperties.getIbmAiDetectFace())
 				  .build();
 		
-		VisualRecognition visualRecognition = new VisualRecognition("2018-03-19", options);
+		VisualRecognition visualRecognition = new VisualRecognition(DATE_VERSION, options);
 
 		DetectFacesOptions detectFacesOptions = new DetectFacesOptions.Builder()
 				.url(TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath())
@@ -192,29 +169,12 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		
 		if(result != null && result.getImages().get(ZERO).getFaces().size()>ZERO) {
 			for(Face face : result.getImages().get(ZERO).getFaces()) {
-					ret = sendMessage(message, faceMessage(face));
+					ret = sendMessage(message, listMessages.faceMessage(face));
 			}
 		} else {
-			ret = sendMessage(message, msgProperties.getNoFace());
+			ret = sendMessage(message, listMessages.faceNotFound());
 		}
 		
 		return ret;
-	}
-	
-	private String faceMessage(Face face) {
-		StringBuilder faceMessage = new StringBuilder();
-		DecimalFormat df = new DecimalFormat("###.##");
-		
-		faceMessage.append("*Age*: Between " + face.getAge().getMin() + " and " + face.getAge().getMax());
-		faceMessage.append("\n*Score*: " + df.format(100*face.getAge().getScore()) + "%\n");
-		faceMessage.append("\n*Gender*: " + face.getGender().getGenderLabel());
-		faceMessage.append("\n*Score*: " + df.format(100*face.getGender().getScore()) + "%\n");
-		faceMessage.append("\n*Face Location*");
-		faceMessage.append("\n*height*: " + face.getFaceLocation().getHeight());
-		faceMessage.append("\n*width*: " + face.getFaceLocation().getWidth());
-		faceMessage.append("\n*left*: " + face.getFaceLocation().getLeft());
-		faceMessage.append("\n*top*: " + face.getFaceLocation().getTop());
-		
-		return faceMessage.toString();
 	}
 }
