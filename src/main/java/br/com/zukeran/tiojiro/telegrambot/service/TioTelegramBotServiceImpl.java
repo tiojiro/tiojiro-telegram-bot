@@ -154,7 +154,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		boolean ret = true;
 		SendResponse sendResponse;
 		SendMessage sendMsg = new SendMessage(message.chat().id(), msg);
-		sendMsg.parseMode(ParseMode.Markdown);
+		sendMsg.parseMode(ParseMode.HTML);
 		
 		if(sendTyping(message)) {
 			sendResponse = bot.execute(sendMsg);
