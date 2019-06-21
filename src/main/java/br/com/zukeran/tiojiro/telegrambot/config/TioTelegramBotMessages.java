@@ -34,7 +34,7 @@ public class TioTelegramBotMessages {
 	}
 
 	public String faceNotFound() {
-		return "I can't find any face. Send me another photo.";
+		return "I can't find any face.\nPlease, send me another photo.";
 	}
 
 	public String faceMessage(Face face) {
