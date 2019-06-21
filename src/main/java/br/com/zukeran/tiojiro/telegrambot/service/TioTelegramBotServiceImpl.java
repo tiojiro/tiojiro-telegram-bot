@@ -154,7 +154,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		boolean ret = true;
 		SendResponse sendResponse;
 		SendMessage sendMsg = new SendMessage(message.chat().id(), msg);
-		sendMsg.parseMode(ParseMode.HTML);
+		sendMsg.parseMode(ParseMode.Markdown);
 		
 		if(sendTyping(message)) {
 			sendResponse = bot.execute(sendMsg);
@@ -205,15 +205,15 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		StringBuilder faceMessage = new StringBuilder();
 		DecimalFormat df = new DecimalFormat("###.##");
 		
-		faceMessage.append("<b>Age</b>: Between " + face.getAge().getMin() + " and " + face.getAge().getMax());
-		faceMessage.append("<br><b>Score</b>: " + df.format(100*face.getAge().getScore()) + "%<br>");
-		faceMessage.append("<br><b>Gender</b>: " + face.getGender().getGenderLabel());
-		faceMessage.append("<br><b>Score</b>: " + df.format(100*face.getGender().getScore()) + "%<br>");
-		faceMessage.append("<br><b>Face Location</b>:");
-		faceMessage.append("<br><b>height</b>: " + face.getFaceLocation().getHeight());
-		faceMessage.append("<br><b>width</b>: " + face.getFaceLocation().getWidth());
-		faceMessage.append("<br><b>left</b>: " + face.getFaceLocation().getLeft());
-		faceMessage.append("<br><b>top</b>: " + face.getFaceLocation().getTop());
+		faceMessage.append("*Age*: Between " + face.getAge().getMin() + " and " + face.getAge().getMax());
+		faceMessage.append("\nScore: " + df.format(100*face.getAge().getScore()) + "%\n");
+		faceMessage.append("\nGender: " + face.getGender().getGenderLabel());
+		faceMessage.append("\nScore: " + df.format(100*face.getGender().getScore()) + "%\n");
+		faceMessage.append("\nFace Location:");
+		faceMessage.append("\nheight: " + face.getFaceLocation().getHeight());
+		faceMessage.append("\nwidth: " + face.getFaceLocation().getWidth());
+		faceMessage.append("\nleft: " + face.getFaceLocation().getLeft());
+		faceMessage.append("\ntop: " + face.getFaceLocation().getTop());
 		
 		return faceMessage.toString();
 	}
