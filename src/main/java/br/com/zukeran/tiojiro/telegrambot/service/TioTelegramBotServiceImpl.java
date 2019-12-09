@@ -1,8 +1,11 @@
 package br.com.zukeran.tiojiro.telegrambot.service;
 
+import java.awt.List;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +19,9 @@ import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectedFaces;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.Face;
 import com.ibm.watson.speech_to_text.v1.SpeechToText;
 import com.ibm.watson.speech_to_text.v1.model.RecognizeOptions;
+import com.ibm.watson.speech_to_text.v1.model.SpeechRecognitionAlternative;
 import com.ibm.watson.speech_to_text.v1.model.SpeechRecognitionResults;
+import com.ibm.watson.speech_to_text.v1.model.SpeechRecognitionResult;
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Audio;
@@ -219,10 +224,20 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			.build();
 		  	
 			SpeechRecognitionResults speechRecognitionResults = speechToText.recognize(recognizeOptions).execute().getResult();
-		  	System.out.println(speechRecognitionResults.toString());
+		  	ArrayList<SpeechRecognitionResult> listSpeech = (ArrayList<SpeechRecognitionResult>) speechRecognitionResults.getResults();
 			
-			if(speechRecognitionResults != null && speechRecognitionResults.toString().length()>ZERO) {
-				ret = sendMessage(message, speechRecognitionResults.toString());			
+		  	StringBuffer strMsg = new StringBuffer();
+		  	for (SpeechRecognitionResult itemSpeech : listSpeech) {
+		  		ArrayList<SpeechRecognitionAlternative> listAlternative = (ArrayList<SpeechRecognitionAlternative>) itemSpeech.getAlternatives();
+		  		for (SpeechRecognitionAlternative itemAlternative : listAlternative) {
+		  			strMsg.append(itemAlternative.getTranscript());
+				}
+			}
+		  	
+		  	System.out.println(strMsg.toString());
+		  	
+			if(strMsg != null && strMsg.length()>ZERO) {
+				ret = sendMessage(message, strMsg.toString());			
 			} else {
 				ret = sendMessage(message, listMessages.audioNotFound());
 			}
