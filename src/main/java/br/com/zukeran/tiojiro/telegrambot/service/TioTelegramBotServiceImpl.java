@@ -58,6 +58,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	private static final String CMD_HELP = "/help";
 	private static final String PHOTO = "PHOTO";
 	private static final String AUDIO = "AUDIO";
+	private static final String VOICE = "VOICE";
 	private static final String DATE_VERSION = "2018-03-19";
 	private static final String TELEGRAM_BOT_URL = "https://api.telegram.org/file/bot";
 	
@@ -93,7 +94,10 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 				ret = analyzePhotos(message);
 				break;
 			case AUDIO:
-				ret = speechToText(message);
+				//ret = speechToText(message);
+				break;
+			case VOICE:
+				//ret = speechToText(message);
 				break;
 			case VAZIO:
 				break;
@@ -118,7 +122,9 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			return PHOTO;
 		else if(update.message().audio() != null && update.message().audio().fileSize()>ZERO)
 			return AUDIO;
-		else
+		else if(update.message().voice() != null && update.message().voice().fileSize()>ZERO)
+			return VOICE;
+		else 
 			return VAZIO;
 	}
 	
