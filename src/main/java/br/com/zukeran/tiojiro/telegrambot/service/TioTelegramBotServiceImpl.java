@@ -1,6 +1,8 @@
 package br.com.zukeran.tiojiro.telegrambot.service;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -209,8 +211,10 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			SpeechToText speechToText = new SpeechToText(authenticator);
 			speechToText.setServiceUrl("https://gateway-lon.watsonplatform.net/speech-to-text/api");
 			
+			InputStream inputStream = new URL(filePath).openStream();
+			
 			RecognizeOptions recognizeOptions = new RecognizeOptions.Builder()
-			.audio(new FileInputStream(filePath))
+			.audio(inputStream)
 			.contentType("audio/mp3")
 			.build();
 		  	
