@@ -1,8 +1,6 @@
 package br.com.zukeran.tiojiro.telegrambot.service;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +17,7 @@ import com.ibm.watson.speech_to_text.v1.model.RecognizeOptions;
 import com.ibm.watson.speech_to_text.v1.model.SpeechRecognitionResults;
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.Audio;
 import com.pengrad.telegrambot.model.File;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.PhotoSize;
@@ -167,6 +166,8 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		try {
 			PhotoSize photo = message.photo()[message.photo().length-ONE];
 			File file = getFile(photo.fileId());
+			String filePath = TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath();
+			System.out.println("photo: [" + filePath + "]");
 					
 			IamOptions options = new IamOptions.Builder()
 					  .apiKey(botProperties.getIbmAiDetectFace())
@@ -175,7 +176,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			VisualRecognition visualRecognition = new VisualRecognition(DATE_VERSION, options);
 			
 			DetectFacesOptions detectFacesOptions = new DetectFacesOptions.Builder()
-					.url(TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath())
+					.url(filePath)
 					.build();
 			
 			DetectedFaces result = visualRecognition.detectFaces(detectFacesOptions).execute();
@@ -199,14 +200,17 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	private boolean speechToText(Message message) {
 		boolean ret = false;
 		try {
-			File file = getFile(message.audio().fileId());
+			Audio audio = message.audio();
+			File file = getFile(audio.fileId());
+			String filePath = TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath();
+			System.out.println("audio: [" + filePath + "]");
 			
 			IamAuthenticator authenticator = new IamAuthenticator(botProperties.getIbmSpeechText());
 			SpeechToText speechToText = new SpeechToText(authenticator);
 			speechToText.setServiceUrl("https://gateway-lon.watsonplatform.net/speech-to-text/api");
 			
 			RecognizeOptions recognizeOptions = new RecognizeOptions.Builder()
-			.audio(new FileInputStream(TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath()))
+			.audio(new FileInputStream(filePath))
 			.contentType("audio/mp3")
 			.build();
 		  	
@@ -217,8 +221,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			} else {
 				ret = sendMessage(message, listMessages.audioNotFound());
 			}
-			
-			System.out.println(speechRecognitionResults);
+
 		  } catch (Exception e) {
 		    e.printStackTrace();
 		    return ret;
