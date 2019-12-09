@@ -219,7 +219,8 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			.build();
 		  	
 			SpeechRecognitionResults speechRecognitionResults = speechToText.recognize(recognizeOptions).execute().getResult();
-		  	
+		  	System.out.println(speechRecognitionResults.toString());
+			
 			if(speechRecognitionResults != null && speechRecognitionResults.toString().length()>ZERO) {
 				ret = sendMessage(message, speechRecognitionResults.toString());			
 			} else {
