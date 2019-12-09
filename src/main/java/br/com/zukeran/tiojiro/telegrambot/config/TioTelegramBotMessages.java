@@ -36,6 +36,10 @@ public class TioTelegramBotMessages {
 	public String faceNotFound() {
 		return "I can't find any face.\nPlease, send me another photo.";
 	}
+	
+	public String audioNotFound() {
+		return "I can't recognize the audio.\nPlease, send me another audio.";
+	}
 
 	public String faceMessage(Face face) {
 		StringBuilder faceMessage = new StringBuilder();

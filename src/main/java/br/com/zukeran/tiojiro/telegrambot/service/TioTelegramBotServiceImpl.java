@@ -1,15 +1,22 @@
 package br.com.zukeran.tiojiro.telegrambot.service;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import com.ibm.watson.developer_cloud.service.security.IamOptions;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectFacesOptions;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.DetectedFaces;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.Face;
+import com.ibm.watson.speech_to_text.v1.SpeechToText;
+import com.ibm.watson.speech_to_text.v1.model.RecognizeOptions;
+import com.ibm.watson.speech_to_text.v1.model.SpeechRecognitionResults;
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.File;
@@ -44,6 +51,7 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 	private static final String CMD_START = "/start";
 	private static final String CMD_HELP = "/help";
 	private static final String PHOTO = "PHOTO";
+	private static final String AUDIO = "AUDIO";
 	private static final String DATE_VERSION = "2018-03-19";
 	private static final String TELEGRAM_BOT_URL = "https://api.telegram.org/file/bot";
 	
@@ -78,6 +86,9 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			case PHOTO:
 				ret = analyzePhotos(message);
 				break;
+			case AUDIO:
+				ret = speechToText(message);
+				break;
 			case VAZIO:
 				break;
 			default:
@@ -99,6 +110,8 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			return msg.split(SPACE)[ZERO];
 		else if(update.message().photo() != null && update.message().photo().length>ZERO)
 			return PHOTO;
+		else if(update.message().audio() != null && update.message().audio().fileSize()>ZERO)
+			return AUDIO;
 		else
 			return VAZIO;
 	}
@@ -173,6 +186,36 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 			}
 		} else {
 			ret = sendMessage(message, listMessages.faceNotFound());
+		}
+		
+		return ret;
+	}
+	
+	private boolean speechToText(Message message) throws Exception {
+		boolean ret = false;
+		File file = getFile(message.audio().fileId());
+		
+		IamAuthenticator authenticator = new IamAuthenticator(botProperties.getIbmSpeechText());
+		SpeechToText speechToText = new SpeechToText(authenticator);
+		speechToText.setServiceUrl("https://gateway-lon.watsonplatform.net/speech-to-text/api");
+		SpeechRecognitionResults speechRecognitionResults = null;
+
+		try {
+		  RecognizeOptions recognizeOptions = new RecognizeOptions.Builder()
+		    .audio(new FileInputStream(TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath()))
+		    .contentType("audio/mp3")
+		    .build();
+		  	speechRecognitionResults = speechToText.recognize(recognizeOptions).execute().getResult();
+		  System.out.println(speechRecognitionResults);
+		  } catch (FileNotFoundException e) {
+		    e.printStackTrace();
+		    return ret;
+		  }
+		
+		if(speechRecognitionResults != null && speechRecognitionResults.toString().length()>ZERO) {
+			ret = sendMessage(message, speechRecognitionResults.toString());			
+		} else {
+			ret = sendMessage(message, listMessages.audioNotFound());
 		}
 		
 		return ret;
