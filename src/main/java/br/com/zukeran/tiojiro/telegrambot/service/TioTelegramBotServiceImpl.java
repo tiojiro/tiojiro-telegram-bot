@@ -162,61 +162,67 @@ public class TioTelegramBotServiceImpl implements TioTelegramBotService{
 		return file;
 	}
 	
-	private boolean analyzePhotos(Message message) throws Exception {
+	private boolean analyzePhotos(Message message){
 		boolean ret = false;
-		PhotoSize photo = message.photo()[message.photo().length-ONE];
-		File file = getFile(photo.fileId());
-				
-		IamOptions options = new IamOptions.Builder()
-				  .apiKey(botProperties.getIbmAiDetectFace())
-				  .build();
-		
-		VisualRecognition visualRecognition = new VisualRecognition(DATE_VERSION, options);
-
-		DetectFacesOptions detectFacesOptions = new DetectFacesOptions.Builder()
-				.url(TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath())
-				.build();
-		
-		DetectedFaces result = visualRecognition.detectFaces(detectFacesOptions).execute();
-		System.out.println(result);
-		
-		if(result != null && result.getImages().get(ZERO).getFaces().size()>ZERO) {
-			for(Face face : result.getImages().get(ZERO).getFaces()) {
-					ret = sendMessage(message, listMessages.faceMessage(face));
+		try {
+			PhotoSize photo = message.photo()[message.photo().length-ONE];
+			File file = getFile(photo.fileId());
+					
+			IamOptions options = new IamOptions.Builder()
+					  .apiKey(botProperties.getIbmAiDetectFace())
+					  .build();
+			
+			VisualRecognition visualRecognition = new VisualRecognition(DATE_VERSION, options);
+			
+			DetectFacesOptions detectFacesOptions = new DetectFacesOptions.Builder()
+					.url(TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath())
+					.build();
+			
+			DetectedFaces result = visualRecognition.detectFaces(detectFacesOptions).execute();
+			System.out.println(result);
+			
+			if(result != null && result.getImages().get(ZERO).getFaces().size()>ZERO) {
+				for(Face face : result.getImages().get(ZERO).getFaces()) {
+						ret = sendMessage(message, listMessages.faceMessage(face));
+				}
+			} else {
+				ret = sendMessage(message, listMessages.faceNotFound());
 			}
-		} else {
-			ret = sendMessage(message, listMessages.faceNotFound());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ret;
 		}
-		
+					
 		return ret;
 	}
 	
-	private boolean speechToText(Message message) throws Exception {
+	private boolean speechToText(Message message) {
 		boolean ret = false;
-		File file = getFile(message.audio().fileId());
-		
-		IamAuthenticator authenticator = new IamAuthenticator(botProperties.getIbmSpeechText());
-		SpeechToText speechToText = new SpeechToText(authenticator);
-		speechToText.setServiceUrl("https://gateway-lon.watsonplatform.net/speech-to-text/api");
-		SpeechRecognitionResults speechRecognitionResults = null;
-
 		try {
-		  RecognizeOptions recognizeOptions = new RecognizeOptions.Builder()
-		    .audio(new FileInputStream(TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath()))
-		    .contentType("audio/mp3")
-		    .build();
-		  	speechRecognitionResults = speechToText.recognize(recognizeOptions).execute().getResult();
-		  System.out.println(speechRecognitionResults);
-		  } catch (FileNotFoundException e) {
+			File file = getFile(message.audio().fileId());
+			
+			IamAuthenticator authenticator = new IamAuthenticator(botProperties.getIbmSpeechText());
+			SpeechToText speechToText = new SpeechToText(authenticator);
+			speechToText.setServiceUrl("https://gateway-lon.watsonplatform.net/speech-to-text/api");
+			
+			RecognizeOptions recognizeOptions = new RecognizeOptions.Builder()
+			.audio(new FileInputStream(TELEGRAM_BOT_URL + botProperties.getToken() + SLASH + file.filePath()))
+			.contentType("audio/mp3")
+			.build();
+		  	
+			SpeechRecognitionResults speechRecognitionResults = speechToText.recognize(recognizeOptions).execute().getResult();
+		  	
+			if(speechRecognitionResults != null && speechRecognitionResults.toString().length()>ZERO) {
+				ret = sendMessage(message, speechRecognitionResults.toString());			
+			} else {
+				ret = sendMessage(message, listMessages.audioNotFound());
+			}
+			
+			System.out.println(speechRecognitionResults);
+		  } catch (Exception e) {
 		    e.printStackTrace();
 		    return ret;
 		  }
-		
-		if(speechRecognitionResults != null && speechRecognitionResults.toString().length()>ZERO) {
-			ret = sendMessage(message, speechRecognitionResults.toString());			
-		} else {
-			ret = sendMessage(message, listMessages.audioNotFound());
-		}
 		
 		return ret;
 	}
